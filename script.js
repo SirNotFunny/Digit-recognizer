@@ -12,7 +12,7 @@ window.addEventListener("load", () => {
     async function loadModel() {
         try {
             console.log("Loading model...");
-            model = await tf.loadLayersModel("model.json");
+            model = await tf.loadLayersModel("./model.json");
             console.log("Model loaded!", model);
         } catch (err) {
             console.error("MODEL LOAD ERROR:", err);
@@ -80,4 +80,5 @@ window.addEventListener("load", () => {
         console.log("Prediction done:", result);
     };
 });
+
 
