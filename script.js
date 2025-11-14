@@ -13,7 +13,7 @@ window.addEventListener("load", () => {
     async function loadModel() {
         try {
             console.log("Loading model...");
-            model = await tf.loadLayersModel("model.json"); 
+            model = await tf.loadLayersModel("./model.json"); 
             console.log("Model loaded successfully!");
         } catch (err) {
             console.error("Model load failed:", err);
@@ -93,3 +93,4 @@ window.addEventListener("load", () => {
     };
 
 });
+
