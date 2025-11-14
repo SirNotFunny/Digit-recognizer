@@ -4,18 +4,23 @@ window.addEventListener("load", () => {
     const ctx = canvas.getContext("2d");
     let isDrawing = false;
 
-    // Load model
+    // 1) Make canvas white at the beginning
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2) Load model
     async function loadModel() {
         try {
-            model = await tf.loadLayersModel("model/model.json");
-            console.log("Model loaded!");
+            console.log("Loading model...");
+            model = await tf.loadLayersModel("./model/model.json");
+            console.log("Model loaded!", model);
         } catch (err) {
             console.error("MODEL LOAD ERROR:", err);
         }
     }
     loadModel();
 
-    // Drawing logic
+    // 3) Drawing logic
     canvas.addEventListener("mousedown", e => {
         isDrawing = true;
         ctx.beginPath();
@@ -45,14 +50,14 @@ window.addEventListener("load", () => {
         ctx.moveTo(event.offsetX, event.offsetY);
     }
 
-    // Clear
+    // 4) Clear button
     document.getElementById("clearBtn").onclick = () => {
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         document.getElementById("result").innerText = "Prediction:";
     };
 
-    // Predict
+    // 5) Predict button
     document.getElementById("predictBtn").onclick = async () => {
         if (!model) {
             console.error("MODEL NOT LOADED YET");
@@ -72,5 +77,6 @@ window.addEventListener("load", () => {
         const result = prediction.argMax(1).dataSync()[0];
 
         document.getElementById("result").innerText = "Prediction: " + result;
+        console.log("Prediction done:", result);
     };
 });
