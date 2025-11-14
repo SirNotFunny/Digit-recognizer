@@ -1,17 +1,27 @@
 window.addEventListener("load", () => {
-    let model;
+
+    let model = null;
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let isDrawing = false;
 
-    // Load model
+    // ---- 1. Initialize canvas background (VERY IMPORTANT) ----
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ---- 2. Load model ----
     async function loadModel() {
-        model = await tf.loadLayersModel("model/model.json");
-        console.log("Model loaded!");
+        try {
+            console.log("Loading model...");
+            model = await tf.loadLayersModel("model/model.json");
+            console.log("Model loaded successfully!");
+        } catch (err) {
+            console.error("Model load failed:", err);
+        }
     }
     loadModel();
 
-    // Drawing logic (mouse)
+    // ---- 3. Drawing events ----
     canvas.addEventListener("mousedown", e => {
         isDrawing = true;
         ctx.beginPath();
@@ -43,34 +53,40 @@ window.addEventListener("load", () => {
         ctx.moveTo(event.offsetX, event.offsetY);
     }
 
-    // Clear canvas
+    // ---- 4. Clear button ----
     document.getElementById("clearBtn").onclick = () => {
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         document.getElementById("result").innerText = "Prediction:";
     };
 
-    // Predict
+    // ---- 5. Predict button ----
     document.getElementById("predictBtn").onclick = async () => {
+
+        if (!model) {
+            document.getElementById("result").innerText = "Prediction: (model not loaded)";
+            console.error("MODEL NOT LOADED YET");
+            return;
+        }
+
+        // Get canvas image
         const imgData = ctx.getImageData(0, 0, 280, 280);
 
+        // Convert image → tensor
         const tensor = tf.browser.fromPixels(imgData, 1)
             .resizeBilinear([28, 28])
             .toFloat()
             .div(255.0)
             .reshape([1, 28, 28, 1]);
 
-        const prediction = model.predict(tensor);
-        const result = prediction.argMax(1).dataSync()[0];
+        // Run prediction
+        const prediction = await model.predict(tensor).data();
+
+        // Get highest probability class
+        const result = prediction.indexOf(Math.max(...prediction));
 
         document.getElementById("result").innerText = "Prediction: " + result;
+        console.log("Prediction vector:", prediction);
     };
-});
 
-document.getElementById("predictBtn").onclick = async () => {
-    if (!model) {
-        console.error("MODEL NOT LOADED");
-        document.getElementById("result").innerText = "Prediction: (model not loaded)";
-        return;
-    }
-}
+});
